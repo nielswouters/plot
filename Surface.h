@@ -12,6 +12,7 @@ public:
     void Clear();
     void Clear(uint32_t _Color);
     void Plot(uint32_t _X, uint32_t _Y, uint32_t _Color);
+    void Print(uint32_t _X, uint32_t _Y, const char* _Str, uint32_t _Color);
 
     uint32_t GetWidth() { return mWidth; }
     uint32_t GetHeight() { return mHeight; }

@@ -9,17 +9,19 @@
 
 #include <iostream>
 
+const bool VSYNC = true;
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
-
 const SDL_PixelFormat BACK_BUFFER_FORMAT = SDL_PIXELFORMAT_ARGB8888;
 
-static void PrintSDLError(const char* _Message)
+static void PrintSDLError(const char* Message)
 {
-    printf("%s. SDL_Error: %s\n", _Message, SDL_GetError());
+    const char* err = SDL_GetError();
+    if (err && err[0] != '\0')
+        printf("%s. SDL_Error: %s\n", Message, err);
 }
 
-float DeltaTime()
+static float DeltaTime()
 {
     using clock = std::chrono::steady_clock;
 
@@ -48,25 +50,35 @@ int main()
         return -1;
     }
 
-    SDL_Surface* screen = SDL_GetWindowSurface(window);
-    if (!screen)
+    int screenWidth;
+    int screenHeight;
+    SDL_GetWindowSizeInPixels(window, &screenWidth, &screenHeight);
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
+    if (!renderer)
     {
-        PrintSDLError("SDL_GetWindowSurface failed");
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+        PrintSDLError("SDL_CreateRenderer failed");
         return -1;
     }
 
-    SDL_Surface* backbuffer = SDL_CreateSurface(screen->w, screen->h, BACK_BUFFER_FORMAT);
-    if (!backbuffer)
+    if (!SDL_SetRenderVSync(renderer, VSYNC))
     {
-        PrintSDLError("SDL_CreateSurface(backbuffer) failed");
-        SDL_DestroyWindow(window);
-        SDL_Quit();
+        PrintSDLError("SDL_SetRenderVSync failed");
         return -1;
     }
 
-    SDL_SetSurfaceBlendMode(backbuffer, SDL_BLENDMODE_NONE);
+    SDL_Texture* texture = SDL_CreateTexture(
+        renderer,
+        BACK_BUFFER_FORMAT,
+        SDL_TEXTUREACCESS_STREAMING,
+        screenWidth,
+        screenHeight
+    );
+    if (!texture)
+    {
+        PrintSDLError("SDL_CreateTexture failed");
+        return -1;
+    }
 
     Plot plot;
     bool run = true;
@@ -85,24 +97,20 @@ int main()
             case SDL_EVENT_WINDOW_RESIZED:
             case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
             {
-                screen = SDL_GetWindowSurface(window);
-                if (!screen)
+                SDL_GetWindowSizeInPixels(window, &screenWidth, &screenHeight);
+
+                if (texture)
                 {
-                    PrintSDLError("SDL_GetWindowSurface failed after resize");
-                    run = false;
-                    break;
+                    SDL_DestroyTexture(texture);
+                    texture = nullptr;
                 }
 
-                SDL_DestroySurface(backbuffer);
-                backbuffer = SDL_CreateSurface(screen->w, screen->h, BACK_BUFFER_FORMAT);
-                if (!backbuffer)
+                texture = SDL_CreateTexture(renderer, BACK_BUFFER_FORMAT, SDL_TEXTUREACCESS_STREAMING, screenWidth, screenHeight);
+                if (!texture)
                 {
-                    PrintSDLError("SDL_CreateSurface(backbuffer) failed after resize");
-                    run = false;
-                    break;
+                    PrintSDLError("SDL_CreateTexture failed");
+                    return -1;
                 }
-
-                SDL_SetSurfaceBlendMode(backbuffer, SDL_BLENDMODE_NONE);
             } break;
 
             case SDL_EVENT_MOUSE_MOTION:
@@ -126,36 +134,28 @@ int main()
         float deltaTime = DeltaTime();
         plot.Update(deltaTime);
 
-        if (!SDL_LockSurface(backbuffer))
+        void* pixels;
+        int pitch;
+        if (!SDL_LockTexture(texture, nullptr, &pixels, &pitch))
         {
-            PrintSDLError("SDL_LockSurface failed");
+            PrintSDLError("SDL_LockTexture failed");
             run = false;
             break;
         }
 
-        Surface surface((uint32_t*)backbuffer->pixels,
-            backbuffer->w, backbuffer->h,
-            backbuffer->pitch / 4);
+        Surface surface((uint32_t*)pixels, screenWidth, screenHeight, pitch / 4);
         plot.Draw(&surface);
 
-        SDL_UnlockSurface(backbuffer);
+        SDL_UnlockTexture(texture);
 
-        if (!SDL_BlitSurface(backbuffer, NULL, screen, NULL))
-        {
-            PrintSDLError("SDL_BlitSurface failed");
-            run = false;
-            break;
-        }
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
 
-        if (!SDL_UpdateWindowSurface(window))
-        {
-            PrintSDLError("SDL_UpdateWindowSurface failed");
-            run = false;
-            break;
-        }
+        SDL_RenderClear(renderer);
+        SDL_RenderTexture(renderer, texture, nullptr, nullptr);
+        SDL_RenderPresent(renderer);
     }
 
-    SDL_DestroySurface(backbuffer);
+    SDL_DestroyTexture(texture);
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;

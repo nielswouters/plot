@@ -15,6 +15,7 @@ public:
     void KeyboardButton(uint32_t _Button, bool _Down);
     void Update(float _DeltaTime);
     void Draw(Surface* _Screen);
+    int mFPS;
 
 private:
 

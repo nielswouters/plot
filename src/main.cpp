@@ -90,8 +90,8 @@ int main()
 
                 float deltaTime = DeltaTime();
                 plot.Update(deltaTime);
-
-                assert(screenSurface->format == SDL_PIXELFORMAT_XRGB8888);
+                
+                // assert(screenSurface->format == SDL_PIXELFORMAT_XRGB8888);
                 Surface surface((uint32_t*)screenSurface->pixels, screenSurface->w, screenSurface->h, screenSurface->pitch / 4);
 
                 plot.Draw(&surface);

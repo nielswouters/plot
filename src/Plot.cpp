@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 Plot::Plot()
+    : mFPS(0)
 {
 
 }
@@ -31,7 +32,7 @@ void Plot::KeyboardButton(uint32_t _Button, bool _Down)
 
 void Plot::Update(float _DeltaTime)
 {
-
+    mFPS = (uint32_t)(1000.0f / _DeltaTime);
 }
 
 void Plot::Draw(Surface* _Screen)
@@ -57,4 +58,8 @@ void Plot::Draw(Surface* _Screen)
             _Screen->Plot(x, y, c);
         }
     }
+
+    char text[64];
+    snprintf(text, sizeof(text), "FPS: %u", mFPS);
+    _Screen->Print(10, 10, text, 0xFFFFFF);
 }

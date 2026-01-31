@@ -10,8 +10,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Grab all .cpp files in src/
+# Disable pkgconfig for Windows
+if (WIN32)
+    set(CMAKE_DISABLE_FIND_PACKAGE_PkgConfig TRUE)
+endif()
 
+# Grab all .cpp files in src/
 file(GLOB PROJECT_SOURCES
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
@@ -21,15 +25,22 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON CACHE BOOL "" FORCE)
 
+# Fetch SDL
+set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
   GIT_TAG release-3.4.0
 )
-
 FetchContent_MakeAvailable(SDL3)
 
 add_executable(Plot ${PROJECT_SOURCES})
+
+# Set as startup project for Visual Studio
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    PROPERTY VS_STARTUP_PROJECT Plot
+)
+
 target_sources(Plot PRIVATE ${PROJECT_SOURCES})
 
 target_link_libraries(Plot PRIVATE SDL3::SDL3)

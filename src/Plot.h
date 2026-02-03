@@ -4,6 +4,9 @@
 #include <stdint.h>
 
 class Surface;
+class hitable;
+class material;
+
 class Plot
 {
 public:
@@ -18,7 +21,10 @@ public:
     int mFPS;
 
 private:
-
+    hitable *list[3];
+    hitable *world;
+    material *materials[3];
+    bool initialized;
 };
 
 #endif

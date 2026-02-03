@@ -5,19 +5,29 @@
 #include "raytracer/hitable.h"
 #include "raytracer/hitablelist.h"
 #include "raytracer/sphere.h"
-// #include "raytracer/world.h"
 
 #include <stdio.h>
 
 Plot::Plot()
-    : mFPS(0)
+    : mFPS(0), world(nullptr), initialized(false)
 {
-
+    materials[0] = nullptr;
+    materials[1] = nullptr;
+    materials[2] = nullptr;
+    list[0] = nullptr;
+    list[1] = nullptr;
+    list[2] = nullptr;
 }
 
 Plot::~Plot()
 {
-
+    delete world;
+    delete list[0];
+    delete list[1];
+    delete list[2];
+    delete materials[0];
+    delete materials[1];
+    delete materials[2];
 }
 
 void Plot::MouseMove(uint32_t _X, uint32_t _Y)
@@ -72,14 +82,19 @@ void Plot::Draw(Surface* _Screen)
     offset++;
 
     static camera cam;
-    // static world wld;
 
-    static hitable *list[3] = {
-        new sphere(vec3(0,0,-1), 0.5, new lambertian(vec3(0.8, 0.3, 0.3))),
-        new sphere(vec3(0,-100.5,-1), 100., new lambertian(vec3(0.8, 0.8, 0.0))),
-        new sphere(vec3(1,0,-1), 0.5, new metal(vec3(0.8, 0.6, 0.2), 0.8))
-    };
-    static hitable *world = new hitable_list(list, 3);
+    if (!initialized) {
+        materials[0] = new lambertian(vec3(0.8, 0.3, 0.3));
+        materials[1] = new lambertian(vec3(0.8, 0.8, 0.0));
+        materials[2] = new metal(vec3(0.8, 0.6, 0.2), 0.8);
+
+        list[0] = new sphere(vec3(0,0,-1), 0.5, materials[0]);
+        list[1] = new sphere(vec3(0,-100.5,-1), 100., materials[1]);
+        list[2] = new sphere(vec3(1,0,-1), 0.5, materials[2]);
+
+        world = new hitable_list(list, 3);
+        initialized = true;
+    }
 
     uint32_t width = _Screen->GetWidth();
     uint32_t height = _Screen->GetHeight();

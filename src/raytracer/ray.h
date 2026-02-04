@@ -3,21 +3,19 @@
 
 #include "vec3.h"
 
-class ray
+class Ray
 {
-    public:
-        // Constructors
-        ray() {}
-        ray(const vec3& a, const vec3& b) { A = a; B = b; }
+public:
+    Ray() {}
+    Ray(const vec3& origin, const vec3& direction) : mOrigin(origin), mDirection(direction) {}
 
-        // Member functions
-        vec3 origin() const { return A; }
-        vec3 direction() const { return B; }
-        vec3 point_at_parameter(float t) const { return A + t * B; }
+    vec3 GetOrigin() const { return mOrigin; }
+    vec3 Direction() const { return mDirection; }
+    vec3 At(float t) const { return mOrigin + t * mDirection; }
 
-        // Member variables  
-        vec3 A;
-        vec3 B;
+private:
+    vec3 mOrigin;
+    vec3 mDirection;
 };
 
 #endif

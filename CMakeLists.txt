@@ -16,8 +16,9 @@ if (WIN32)
 endif()
 
 # Grab all .cpp files in src/
-file(GLOB PROJECT_SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
 # Build SDL as static, not shared
@@ -28,9 +29,9 @@ set(SDL_STATIC ON CACHE BOOL "" FORCE)
 # Fetch SDL
 set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
-  SDL3
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-3.4.0
+    SDL3
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG release-3.4.0
 )
 FetchContent_MakeAvailable(SDL3)
 
@@ -47,5 +48,5 @@ target_link_libraries(Plot PRIVATE SDL3::SDL3)
 
 # So headers in src/ can be included like: #include "foo.h"
 target_include_directories(Plot PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )

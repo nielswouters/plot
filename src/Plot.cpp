@@ -50,12 +50,12 @@ void Plot::Update(float _DeltaTime)
     mFPS = (uint32_t)(1000.0f / _DeltaTime);
 }
 
-static vec3 color(const ray& r, hitable *world, int depth = 0)
+static vec3 color(const Ray& r, hitable *world, int depth = 0)
 {
     hit_record rec;
-    if (world->hit(r, 0.001, MAXFLOAT, rec))
+    if (world->hit(r, 0.001, FLT_MAX, rec))
     {
-        ray scattered;
+        Ray scattered;
         vec3 attenuation;
         if (depth < 5 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
         {
@@ -68,7 +68,7 @@ static vec3 color(const ray& r, hitable *world, int depth = 0)
     }
     else
     {
-        vec3 unit_direction = r.direction().unit_vector();
+        vec3 unit_direction = r.Direction().unit_vector();
         float t = 0.5 * (unit_direction.y() + 1.0);
         return (1.0-t) * vec3(1., 1., 1.) + t * vec3(0.5, 0.7, 1.0);
     }
@@ -81,7 +81,7 @@ void Plot::Draw(Surface* _Screen)
     static uint32_t offset = 0;
     offset++;
 
-    static camera cam;
+    static Camera cam;
 
     if (!initialized) {
         materials[0] = new lambertian(vec3(0.8, 0.3, 0.3));
@@ -107,7 +107,7 @@ void Plot::Draw(Surface* _Screen)
         {   
             vec3 col(0., 0., 0.);
 
-            ray first_ray = cam.get_ray(float(x) / float(width), float(y) / float(height));
+            Ray first_ray = cam.get_ray(float(x) / float(width), float(y) / float(height));
             col = color(first_ray, world, 0);
             col = sqrt(col);
             col *= 255.99;

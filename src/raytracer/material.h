@@ -9,7 +9,7 @@ class material
 {
     public:
         virtual ~material() = default;
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const = 0;
+        virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const = 0;
 };
 
 // Diffuse/lambertian material
@@ -28,10 +28,10 @@ class lambertian : public material
     public:
         lambertian(const vec3& a) : albedo(a) {}
 
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override
+        virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const override
         {            
             vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-            scattered = ray(rec.p, target - rec.p);
+            scattered = Ray(rec.p, target - rec.p);
             attenuation = albedo;
             return true;
         }
@@ -46,12 +46,12 @@ class metal : public material
         metal(const vec3& a) : albedo(a), fuzz(0.f) {}
         metal(const vec3& a, float f) : albedo(a) { if (f < 1) fuzz = f; else fuzz = 1.; }
 
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override
+        virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const override
         {
-            vec3 reflected = reflect(r_in.direction().unit_vector(), rec.normal);
-            scattered = ray(rec.p, reflected + fuzz*random_in_unit_sphere());
+            vec3 reflected = reflect(r_in.Direction().unit_vector(), rec.normal);
+            scattered = Ray(rec.p, reflected + fuzz*random_in_unit_sphere());
             attenuation = albedo;
-            return (dot(scattered.direction(), rec.normal) > 0);
+            return (dot(scattered.Direction(), rec.normal) > 0);
         }
         vec3 albedo;
         float fuzz;
@@ -68,30 +68,30 @@ class dielectric : public material
     public:
         dielectric(float ri) : ref_idx(ri) {}
 
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override
+        virtual bool scatter(const Ray& r_in, const hit_record& rec, vec3& attenuation, Ray& scattered) const override
         {
             vec3 outward_normal;
-            vec3 reflected = reflect(r_in.direction(), rec.normal);
+            vec3 reflected = reflect(r_in.Direction(), rec.normal);
             float ni_over_nt;
             attenuation = vec3(1.0, 1.0, 1.0); // no attenuation for dielectric
             vec3 refracted;
             float reflect_prob;
             float cosine;
 
-            if (dot(r_in.direction(), rec.normal) > 0)
+            if (dot(r_in.Direction(), rec.normal) > 0)
             {
                 outward_normal = -rec.normal;
                 ni_over_nt = ref_idx;
-                cosine = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
+                cosine = ref_idx * dot(r_in.Direction(), rec.normal) / r_in.Direction().length();
             }
             else
             {
                 outward_normal = rec.normal;
                 ni_over_nt = 1.0 / ref_idx;
-                cosine = -dot(r_in.direction(), rec.normal) / r_in.direction().length();
+                cosine = -dot(r_in.Direction(), rec.normal) / r_in.Direction().length();
             }
 
-            if (refract(r_in.direction(), outward_normal, ni_over_nt, refracted))
+            if (refract(r_in.Direction(), outward_normal, ni_over_nt, refracted))
             {
                 reflect_prob = schlick(cosine, ref_idx);
             }
@@ -102,11 +102,11 @@ class dielectric : public material
 
             if (random_float() < reflect_prob)
             {
-                scattered = ray(rec.p, reflected);
+                scattered = Ray(rec.p, reflected);
             }
             else
             {
-                scattered = ray(rec.p, refracted);
+                scattered = Ray(rec.p, refracted);
             }
 
             return true;

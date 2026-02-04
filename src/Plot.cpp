@@ -86,6 +86,7 @@ void Plot::Draw(Surface* _Screen)
     if (!initialized) {
         materials[0] = new lambertian(vec3(0.8, 0.3, 0.3));
         materials[1] = new lambertian(vec3(0.8, 0.8, 0.0));
+        // materials[2] = new lambertian(vec3(0.8, 0.6, 0.2));
         materials[2] = new metal(vec3(0.8, 0.6, 0.2), 0.8);
 
         list[0] = new sphere(vec3(0,0,-1), 0.5, materials[0]);
@@ -99,6 +100,7 @@ void Plot::Draw(Surface* _Screen)
     uint32_t width = _Screen->GetWidth();
     uint32_t height = _Screen->GetHeight();
 
+    
     for (uint32_t y = 0; y < height; y++)
     {
         for (uint32_t x = 0; x < width; x++)
@@ -106,7 +108,7 @@ void Plot::Draw(Surface* _Screen)
             vec3 col(0., 0., 0.);
 
             ray first_ray = cam.get_ray(float(x) / float(width), float(y) / float(height));
-            col = color(first_ray, world);
+            col = color(first_ray, world, 0);
             col = sqrt(col);
             col *= 255.99;
             uint32_t r = uint32_t(col.r());

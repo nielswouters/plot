@@ -4,49 +4,17 @@
 #include "hitable.h"
 #include "material.h"
 
-class sphere : public hitable
+class Sphere : public Hitable
 {
     public:
-        sphere() {}
-        sphere(vec3 cen, float r) : center(cen), radius(r) {}
-        sphere(vec3 cen, float r, material *m) : center(cen), radius(r), mat_ptr(m) {}
-        virtual bool hit(const Ray& r, float tmin, float tmax, hit_record& rec) const override;
+        Sphere() {}
+        Sphere(vec3 cen, float r) : mCenter(cen), mRadius(r) {}
+        Sphere(vec3 cen, float r, Material *m) : mCenter(cen), mRadius(r), mMatPtr(m) {}
+        virtual bool Hit(const Ray& ray, float tmin, float tmax, HitRecord& rec) const override;
 
-        vec3  center;
-        float radius;
-        material *mat_ptr;
+        vec3  mCenter;
+        float mRadius;
+        Material *mMatPtr;
 };
-
-inline bool sphere::hit(const Ray& r, float t_min, float t_max, hit_record& rec) const
-{
-    vec3 oc = r.GetOrigin() - center;
-    float a = r.Direction().length_squared();
-    float b  = dot(oc, r.Direction());
-    float c  = dot(oc, oc) - radius * radius;
-    float discriminant = b * b - a * c;
-
-    if (discriminant > 0)
-    {
-        float temp = (-b - sqrt(b * b - a * c)) / a;
-        if (temp < t_max && temp > t_min)
-        {
-            rec.t      = temp;
-            rec.p      = r.At(rec.t);
-            rec.normal = (rec.p - center) / radius;
-            rec.mat_ptr = mat_ptr;
-            return true;
-        }
-
-        temp = (-b + sqrt(b * b - a * c)) / a;
-        if (temp < t_max && temp > t_min) {
-            rec.t      = temp;
-            rec.p      = r.At(rec.t);
-            rec.normal = (rec.p - center) / radius;
-            rec.mat_ptr = mat_ptr;  
-            return true;
-        }
-    }
-    return false;
-}
 
 #endif

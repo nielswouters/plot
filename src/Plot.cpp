@@ -6,6 +6,7 @@
 #include "raytracer/hitablelist.h"
 #include "raytracer/sphere.h"
 
+#include <cfloat>
 #include <stdio.h>
 
 Plot::Plot()
@@ -50,14 +51,14 @@ void Plot::Update(float _DeltaTime)
     mFPS = (uint32_t)(1000.0f / _DeltaTime);
 }
 
-static vec3 color(const Ray& r, hitable *world, int depth = 0)
+static vec3 color(const Ray& r, Hitable *world, int depth = 0)
 {
-    hit_record rec;
-    if (world->hit(r, 0.001, FLT_MAX, rec))
+    HitRecord rec;
+    if (world->Hit(r, 0.001, FLT_MAX, rec))
     {
         Ray scattered;
         vec3 attenuation;
-        if (depth < 5 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        if (depth < 5 && rec.mMatPtr->Scatter(r, rec, attenuation, scattered))
         {
             return attenuation * color(scattered, world, depth + 1);
         }
@@ -84,14 +85,14 @@ void Plot::Draw(Surface* _Screen)
     static Camera cam;
 
     if (!initialized) {
-        materials[0] = new lambertian(vec3(0.8, 0.3, 0.3));
-        materials[1] = new lambertian(vec3(0.8, 0.8, 0.0));
+        materials[0] = new Lambertian(vec3(0.8, 0.3, 0.3));
+        materials[1] = new Lambertian(vec3(0.8, 0.8, 0.0));
         // materials[2] = new lambertian(vec3(0.8, 0.6, 0.2));
-        materials[2] = new metal(vec3(0.8, 0.6, 0.2), 0.8);
+        materials[2] = new Metal(vec3(0.8, 0.6, 0.2), 0.8);
 
-        list[0] = new sphere(vec3(0,0,-1), 0.5, materials[0]);
-        list[1] = new sphere(vec3(0,-100.5,-1), 100., materials[1]);
-        list[2] = new sphere(vec3(1,0,-1), 0.5, materials[2]);
+        list[0] = new Sphere(vec3(0,0,-1), 0.5, materials[0]);
+        list[1] = new Sphere(vec3(0,-100.5,-1), 100., materials[1]);
+        list[2] = new Sphere(vec3(1,0,-1), 0.5, materials[2]);
 
         world = new hitable_list(list, 3);
         initialized = true;

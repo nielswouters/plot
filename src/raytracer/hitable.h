@@ -3,21 +3,21 @@
 
 #include "ray.h"
 
-class material; // Forward declaration
+class Material; // Forward declaration
 
-struct hit_record
+struct HitRecord
 {
-    float t; // parameter t where ray hits
-    vec3 p; // point of intersection
-    vec3 normal; // normal at the intersection
-    material *mat_ptr; // pointer to the material of the hit object
+    float mParameterOfHit; // parameter t where ray hits
+    vec3 mPointOfHit; // point of intersection
+    vec3 mNormal; // normal at the intersection
+    Material *mMatPtr; // pointer to the material of the hit object
 };
 
-class hitable
+class Hitable
 {
-    public:
-        virtual ~hitable() = default;
-        virtual bool hit(const Ray& r, float t_min, float t_max, hit_record& rec) const = 0;
+public:
+    virtual ~Hitable() = default;
+    virtual bool Hit(const Ray& ray, float t_min, float t_max, HitRecord& rec) const = 0;
 };
 
 #endif

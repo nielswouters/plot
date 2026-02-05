@@ -6,11 +6,13 @@
 #include "raytracer/hitablelist.h"
 #include "raytracer/sphere.h"
 
+#include <SDL3/SDL.h>
+
 #include <cfloat>
 #include <stdio.h>
 
 Plot::Plot()
-    : mFPS(0), world(nullptr), initialized(false)
+    : mFPS(0), world(nullptr), initialized(false), camera(nullptr)
 {
     materials[0] = nullptr;
     materials[1] = nullptr;
@@ -29,26 +31,59 @@ Plot::~Plot()
     delete materials[0];
     delete materials[1];
     delete materials[2];
+    delete camera;
 }
 
 void Plot::MouseMove(uint32_t _X, uint32_t _Y)
 {
-    printf("Mouse Move: %u %u\n", _X, _Y);
+    static int last_x = _X;
+    static int last_y = _Y;
+    
+    float delta_x = _X - last_x;
+    float delta_y = _Y - last_y;
+    
+    if (camera) {
+        camera->UpdateMouseLook(delta_x, delta_y, 0.1f);
+    }
+    
+    last_x = _X;
+    last_y = _Y;
 }
 
 void Plot::MouseButton(uint32_t _Button, bool _Down)
 {
-    printf("Mouse Button: %u %s\n", _Button, _Down ? "Down" : "Up");
+    // Mouse button handling can be added here if needed
 }
 
 void Plot::KeyboardButton(uint32_t _Button, bool _Down)
 {
-    printf("Keyboard Button: %u %s\n", _Button, _Down ? "Down" : "Up");
+    float value = _Down ? 1.0f : 0.0f;
+    
+    // WASD movement
+    if (_Button == SDLK_W) input_forward = value;
+    if (_Button == SDLK_S) input_forward = _Down ? -1.0f : 0.0f;
+    if (_Button == SDLK_D) input_right = value;
+    if (_Button == SDLK_A) input_right = _Down ? -1.0f : 0.0f;
+    
+    // Space/Ctrl for up/down
+    if (_Button == SDLK_SPACE) input_up = value;
+    if (_Button == SDLK_LCTRL) input_up = _Down ? -1.0f : 0.0f;
 }
 
 void Plot::Update(float _DeltaTime)
 {
     mFPS = (uint32_t)(1000.0f / _DeltaTime);
+    
+    if (camera) {
+        // Convert delta time from milliseconds to seconds
+        float dt = _DeltaTime / 1000.0f;
+        
+        // Update movement input (speed in units/second)
+        camera->UpdateMovement(input_forward, input_right, input_up, dt, 30.0f);
+        
+        // Update camera with physics (smooth velocity)
+        camera->Update(dt);
+    }
 }
 
 static vec3 color(const Ray& r, Hitable *world, int depth = 0)
@@ -82,8 +117,6 @@ void Plot::Draw(Surface* _Screen)
     static uint32_t offset = 0;
     offset++;
 
-    static Camera cam;
-
     if (!initialized) {
         materials[0] = new Lambertian(vec3(0.8, 0.3, 0.3));
         materials[1] = new Lambertian(vec3(0.8, 0.8, 0.0));
@@ -95,6 +128,10 @@ void Plot::Draw(Surface* _Screen)
         list[2] = new Sphere(vec3(1,0,-1), 0.5, materials[2]);
 
         world = new hitable_list(list, 3);
+        
+        // Initialize camera
+        camera = new Camera(vec3(0., 0., 3.), vec3(0., 0., -1.), vec3(0., 1., 0.), 90., 2.0, 0., 1.0);
+        
         initialized = true;
     }
 
@@ -108,7 +145,7 @@ void Plot::Draw(Surface* _Screen)
         {   
             vec3 col(0., 0., 0.);
 
-            Ray first_ray = cam.get_ray(float(x) / float(width), float(y) / float(height));
+            Ray first_ray = camera->get_ray(float(x) / float(width), float(y) / float(height));
             col = color(first_ray, world, 0);
             col = sqrt(col);
             col *= 255.99;

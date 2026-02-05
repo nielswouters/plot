@@ -15,9 +15,15 @@ public:
     Ray get_ray(float s, float t) const;
 
     vec3 GetOrigin() const { return origin; }
+    
+    // Input handling
+    void UpdateMouseLook(float deltaX, float deltaY, float sensitivity = 0.1f);
+    void UpdateMovement(float forward, float right, float up, float deltaTime, float speed = 50.0f);
+    void Update(float deltaTime);
 
 private:
     vec3 random_in_unit_disk() const;
+    void RecalculateCamera();
 
     vec3 left_upper_corner;
     vec3 mHorizontal;
@@ -25,6 +31,22 @@ private:
     vec3 origin;
     vec3 u, v, w;
     float lens_radius;
+    
+    // Camera control
+    vec3 position;
+    float yaw = 0.0f;      // Rotation around Y-axis (left/right)
+    float pitch = 0.0f;    // Rotation around X-axis (up/down)
+    
+    // Velocity for smooth movement
+    vec3 velocity;
+    vec3 desired_velocity;
+    
+    // Camera parameters
+    float vfov = 90.0f;
+    float aspect = 2.0f;
+    float aperture = 0.0f;
+    float focus_dist = 1.0f;
+    vec3 world_up;
 };
 
 #endif

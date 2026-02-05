@@ -6,6 +6,7 @@
 class Surface;
 class Hitable;
 class Material;
+class Camera;
 
 class Plot
 {
@@ -25,6 +26,11 @@ private:
     Hitable *world;
     Material *materials[3];
     bool initialized;
+    
+    Camera *camera;
+    float input_forward = 0;   // -1 to 1
+    float input_right = 0;     // -1 to 1
+    float input_up = 0;        // -1 to 1
 };
 
 #endif

@@ -14,7 +14,7 @@ public:
     Plot();
     ~Plot();
 
-    void MouseMove(uint32_t _X, uint32_t _Y);
+    void MouseMove(int _X, int _Y);
     void MouseButton(uint32_t _Button, bool _Down);
     void KeyboardButton(uint32_t _Button, bool _Down);
     void Update(float _DeltaTime);
@@ -25,7 +25,7 @@ private:
     Hitable *list[3];
     Hitable *world;
     Material *materials[3];
-    bool initialized;
+    // bool initialized;
     
     Camera *camera;
     float input_forward = 0;   // -1 to 1

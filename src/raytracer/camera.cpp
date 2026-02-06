@@ -59,8 +59,8 @@ void Camera::UpdateMouseLook(float deltaX, float deltaY, float sensitivity)
     pitch -= deltaY * sensitivity;
     
     // Clamp pitch to prevent flipping
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
+    if (pitch > 40.0f) pitch = 40.0f;
+    if (pitch < -40.0f) pitch = -40.0f;
     
     // Mouse X controls yaw (looking left/right)
     yaw += deltaX * sensitivity;

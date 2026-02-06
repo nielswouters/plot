@@ -114,7 +114,7 @@ int main()
             } break;
 
             case SDL_EVENT_MOUSE_MOTION:
-                plot.MouseMove((uint32_t)e.motion.x, (uint32_t)e.motion.y);
+                plot.MouseMove((int)e.motion.x, (int)e.motion.y);
                 break;
 
             case SDL_EVENT_MOUSE_BUTTON_UP:

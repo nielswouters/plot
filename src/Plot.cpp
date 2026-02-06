@@ -11,15 +11,20 @@
 #include <cfloat>
 #include <stdio.h>
 
-Plot::Plot()
-    : mFPS(0), world(nullptr), initialized(false), camera(nullptr)
+Plot::Plot() : mFPS(0)
 {
-    materials[0] = nullptr;
-    materials[1] = nullptr;
-    materials[2] = nullptr;
-    list[0] = nullptr;
-    list[1] = nullptr;
-    list[2] = nullptr;
+    // Initialize camera
+    camera = new Camera(vec3(0., 0., 3.), vec3(0., 0., -1.), vec3(0., 1., 0.), 90., 2.0, 0., 1.0);
+
+    materials[0] = new Lambertian(vec3(0.8, 0.3, 0.3));
+    materials[1] = new Lambertian(vec3(0.8, 0.8, 0.0));
+    materials[2] = new Metal(vec3(0.8, 0.6, 0.2), 0.8);
+
+    list[0] = new Sphere(vec3(0,0,-1), 0.5, materials[0]);
+    list[1] = new Sphere(vec3(0,-100.5,-1), 100., materials[1]);
+    list[2] = new Sphere(vec3(1,0,-1), 0.5, materials[2]);
+
+    world = new hitable_list(list, 3);    
 }
 
 Plot::~Plot()
@@ -33,18 +38,15 @@ Plot::~Plot()
     delete materials[2];
     delete camera;
 }
-
-void Plot::MouseMove(uint32_t _X, uint32_t _Y)
+void Plot::MouseMove(int _X, int _Y)
 {
-    static int last_x = _X;
-    static int last_y = _Y;
+    static int last_x = 0;
+    static int last_y = 0;
     
     float delta_x = _X - last_x;
     float delta_y = _Y - last_y;
-    
-    if (camera) {
-        camera->UpdateMouseLook(delta_x, delta_y, 0.1f);
-    }
+
+    camera->UpdateMouseLook(delta_x, delta_y, 0.1f);
     
     last_x = _X;
     last_y = _Y;
@@ -116,24 +118,6 @@ void Plot::Draw(Surface* _Screen)
 
     static uint32_t offset = 0;
     offset++;
-
-    if (!initialized) {
-        materials[0] = new Lambertian(vec3(0.8, 0.3, 0.3));
-        materials[1] = new Lambertian(vec3(0.8, 0.8, 0.0));
-        // materials[2] = new lambertian(vec3(0.8, 0.6, 0.2));
-        materials[2] = new Metal(vec3(0.8, 0.6, 0.2), 0.8);
-
-        list[0] = new Sphere(vec3(0,0,-1), 0.5, materials[0]);
-        list[1] = new Sphere(vec3(0,-100.5,-1), 100., materials[1]);
-        list[2] = new Sphere(vec3(1,0,-1), 0.5, materials[2]);
-
-        world = new hitable_list(list, 3);
-        
-        // Initialize camera
-        camera = new Camera(vec3(0., 0., 3.), vec3(0., 0., -1.), vec3(0., 1., 0.), 90., 2.0, 0., 1.0);
-        
-        initialized = true;
-    }
 
     uint32_t width = _Screen->GetWidth();
     uint32_t height = _Screen->GetHeight();
